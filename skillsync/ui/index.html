@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>SkillSync MVP</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; }
+        .box { border: 1px solid #ccc; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        #chat-window { height: 300px; overflow-y: scroll; background: #f9f9f9; padding: 10px; }
+        .source { font-size: 0.8em; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>🧠 SkillSync MVP</h1>
+
+    <div class="box">
+        <h3>📄 PDF Feltöltés</h3>
+        <input type="file" id="pdfFile" accept=".pdf">
+        <button onclick="uploadFile()">Feltöltés és Indexelés</button>
+        <p id="uploadStatus"></p>
+    </div>
+
+    <div class="box">
+        <h3>💬 Chat</h3>
+        <div id="chat-window"></div>
+        <input type="text" id="userInput" style="width: 80%" placeholder="Kérdezz valamit...">
+        <button onclick="askChat()">Küldés</button>
+    </div>
+
+    <script>
+        async function uploadFile() {
+            const fileInput = document.getElementById('pdfFile');
+            if (fileInput.files.length === 0) return alert("Válassz fájlt!");
+
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            document.getElementById('uploadStatus').innerText = "Feldolgozás... várj...";
+            const res = await fetch("/upload", { method: "POST", body: formData });
+            const data = await res.json();
+            document.getElementById('uploadStatus').innerText = data.message || data.detail;
+        }
+
+        async function askChat() {
+            const input = document.getElementById('userInput');
+            const chatWin = document.getElementById('chat-window');
+            const question = input.value;
+            if (!question) return;
+
+            chatWin.innerHTML += `<p><b>Te:</b> ${question}</p>`;
+            input.value = "";
+
+            const res = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: question })
+            });
+            const data = await res.json();
+
+            chatWin.innerHTML += `<p><b>SkillSync:</b> ${data.answer}</p>`;
+            chatWin.innerHTML += `<p class="source">Források: ${data.sources.join(", ")}</p><hr>`;
+            chatWin.scrollTop = chatWin.scrollHeight;
+        }
+    </script>
+</body>
+</html>
