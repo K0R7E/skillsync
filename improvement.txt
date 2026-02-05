@@ -3,7 +3,7 @@
 3. Szerepkör-alapú jogosultságkezelés (admin / szerkesztő / olvasó cégen belül)
 4. Dokumentum életciklus-kezelés (verziózás, lejárat, újraindexelés, törlés, audit napló)
 5. Intelligens PDF feldolgozás (okos darabolás, táblázatok/képek NEM KELLENEK)
-6. Cserélhető vektoradatbázisok (alapból FAISS, később Chroma / Milvus) - mivel jobb a chroma?
+6. Cserélhető vektoradatbázisok (alapból FAISS, később Chroma / Milvus)
 7. Rugalmas modellkezelés Ollamával (LLM- és embedding-csere, később lokális finomhangolás)
 8. Prompt-irányítás (céges alapprompt + osztályonkénti felülírás)
 9. Magyarázható válaszok (forrásmegjelölés, oldalszám, megbízhatósági szint)
@@ -23,3 +23,13 @@
 23. Hibrid keresés + chat mód (klasszikus keresés + beszélgetés)
 24. Alacsony erőforrás-igényű mód (gyengébb gépeken is fut)
 25. Egyértelmű bizalmi határok („az adataid nem hagyják el a géped”)
+26. Hybrid Search (BM25)
+27. Reranking
+28. Ollama optimalizálás
+29. Streaming válaszok
+30. Csevegési előzmények
+31. PDF vizualizáció
+32. Dokumentum menedzsment: Egy felület, ahol látszik, milyen PDF-ek vannak már az indexben, és szükség esetén törölhetők.
+33. Dockerizálás Csomagoljuk be az egészet egy Docker konténerbe, hogy egyetlen paranccsal telepíthető legyen bármilyen céges szerverre (GPU támogatással).
+34. Logs & Audit: Naplózni, hogy ki mit kérdezett (adatvédelmi szabályok betartásával).
+
