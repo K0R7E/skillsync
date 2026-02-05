@@ -1,0 +1,15 @@
+# .gitignore
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Adatok és Vektorok (Szigorúan lokális!)
+data/*
+!data/.gitkeep
+vectorstore/*
+!vectorstore/.gitkeep
+
+# IDE beállítások
+.vscode/
+.idea/
