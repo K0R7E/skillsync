@@ -6,6 +6,7 @@ data/*
 !data/.gitkeep
 vectorstore/*
 !vectorstore/.gitkeep
+opt/
 
 # IDE beállítások
 .vscode/
