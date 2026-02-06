@@ -4,26 +4,46 @@
     <meta charset="UTF-8">
     <title>SkillSync MVP</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; background-color: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; background-color: #f4f7f6; color: #333; }
         .box { background: white; border: 1px solid #ddd; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h1 { color: #2c3e50; text-align: center; }
+        
+        /* Chat stílusok */
         #chat-window { height: 400px; overflow-y: auto; background: #fff; border: 1px solid #eee; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; flex-direction: column; }
-        .message { margin-bottom: 15px; padding: 10px 15px; border-radius: 15px; max-width: 80%; }
-        .user-msg { background: #007bff; color: white; align-self: flex-end; }
-        .ai-msg { background: #e9ecef; color: #333; align-self: flex-start; }
-        input[type="text"] { width: 75%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; }
-        button { padding: 12px 20px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background 0.3s; }
+        .message { margin-bottom: 15px; padding: 10px 15px; border-radius: 15px; max-width: 80%; line-height: 1.5; white-space: pre-wrap; }
+        .user-msg { background: #007bff; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .ai-msg { background: #e9ecef; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
+        
+        /* Fájllista stílusok */
+        .file-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+        .file-item:last-child { border-bottom: none; }
+        .delete-btn { background: #dc3545; padding: 5px 10px; font-size: 0.8rem; }
+        .delete-btn:hover { background: #c82333; }
+
+        /* Inputok */
+        input[type="text"] { flex-grow: 1; padding: 12px; border: 1px solid #ccc; border-radius: 6px; }
+        button { padding: 12px 20px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background 0.3s; font-weight: bold; }
         button:hover { background: #218838; }
-        .source-info { font-size: 0.75rem; color: #777; margin-top: 5px; }
+        .upload-section { display: flex; gap: 10px; align-items: center; }
     </style>
 </head>
 <body>
     <h1>🧠 SkillSync Vállalati Asszisztens</h1>
 
     <div class="box">
-        <h3>📄 Dokumentum feltöltése (Tenant: default)</h3>
-        <input type="file" id="pdfFile" accept=".pdf">
-        <button onclick="uploadFile()">Feltöltés és Indexelés</button>
-        <p id="uploadStatus"></p>
+        <h3>📄 Dokumentumok Kezelése</h3>
+        <div class="upload-section">
+            <input type="file" id="pdfFile" accept=".pdf">
+            <button onclick="uploadFile()">Feltöltés</button>
+        </div>
+        <p id="uploadStatus" style="font-size: 0.9rem; margin-top: 10px;"></p>
+        
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+        
+        <h4>Aktuális index tartalom:</h4>
+        <div id="file-list">
+            <em>Betöltés...</em>
+        </div>
     </div>
 
     <div class="box">
@@ -37,8 +57,46 @@
 
     <script>
         let chatHistory = [];
+        const tenant_id = "default"; // Később ez dinamikus lesz
 
-        // --- FELTÖLTÉS FUNKCIÓ ---
+        // Oldal betöltésekor listázzuk a fájlokat
+        window.onload = refreshFileList;
+
+        async function refreshFileList() {
+            const listDiv = document.getElementById('file-list');
+            try {
+                const res = await fetch(`/files/${tenant_id}`);
+                const files = await res.json();
+                
+                if (files.length === 0) {
+                    listDiv.innerHTML = "<em>Nincsenek feltöltött dokumentumok.</em>";
+                    return;
+                }
+
+                listDiv.innerHTML = files.map(f => `
+                    <div class="file-item">
+                        <span><strong>${f.name}</strong> <small>(${(f.size / 1024).toFixed(1)} KB)</small></span>
+                        <button class="delete-btn" onclick="deleteFile('${f.name}')">Törlés</button>
+                    </div>
+                `).join('');
+            } catch (err) {
+                listDiv.innerHTML = "⚠️ Nem sikerült a fájllista lekérése.";
+            }
+        }
+
+        async function deleteFile(filename) {
+            if (!confirm(`Biztosan törölni szeretnéd a(z) ${filename} fájlt? Az index újraépül.`)) return;
+            
+            try {
+                const res = await fetch(`/files/${tenant_id}/${filename}`, { method: 'DELETE' });
+                if (res.ok) {
+                    refreshFileList();
+                }
+            } catch (err) {
+                alert("Hiba a törlés során.");
+            }
+        }
+
         async function uploadFile() {
             const fileInput = document.getElementById('pdfFile');
             const status = document.getElementById('uploadStatus');
@@ -50,35 +108,34 @@
 
             const formData = new FormData();
             formData.append("file", fileInput.files[0]);
+            formData.append("tenant_id", tenant_id);
 
-            status.innerText = "⏳ Feldolgozás folyamatban... Ez eltarthat egy ideig.";
+            status.innerText = "⏳ Feldolgozás és indexelés... Ez eltarthat egy ideig.";
             
             try {
                 const res = await fetch("/upload", { method: "POST", body: formData });
-                const data = await res.json();
-                status.innerText = "✅ " + (data.message || "Sikeres feltöltés!");
+                if (res.ok) {
+                    status.innerText = "✅ Sikeres feltöltés!";
+                    fileInput.value = "";
+                    refreshFileList();
+                }
             } catch (err) {
-                status.innerText = "❌ Hiba történt a feltöltés során.";
-                console.error(err);
+                status.innerText = "❌ Hiba történt.";
             }
         }
 
-        // --- CHAT ÉS STREAMING FUNKCIÓ ---
         async function askChat() {
             const input = document.getElementById('userInput');
             const chatWin = document.getElementById('chat-window');
             const question = input.value.trim();
-            
             if (!question) return;
 
-            // Felhasználói buborék
             chatWin.innerHTML += `<div class="message user-msg">${question}</div>`;
             input.value = "";
 
-            // AI válasz buborék előkészítése
             const aiDiv = document.createElement("div");
             aiDiv.className = "message ai-msg";
-            aiDiv.innerHTML = "<em>Gondolkodom...</em>";
+            aiDiv.innerHTML = "<em>...</em>";
             chatWin.appendChild(aiDiv);
             chatWin.scrollTop = chatWin.scrollHeight;
 
@@ -88,32 +145,28 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
                         message: question,
-                        history: chatHistory 
+                        history: chatHistory,
+                        tenant_id: tenant_id
                     })
                 });
 
                 const reader = res.body.getReader();
                 const decoder = new TextDecoder();
                 let fullAnswer = "";
-                aiDiv.innerHTML = ""; // Töröljük a "Gondolkodom..." feliratot
+                aiDiv.innerHTML = "";
 
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-                    
-                    const chunk = decoder.decode(value, { stream: true });
-                    fullAnswer += chunk;
-                    aiDiv.innerText = fullAnswer; // Biztonságos szövegmegjelenítés
+                    fullAnswer += decoder.decode(value);
+                    aiDiv.innerText = fullAnswer;
                     chatWin.scrollTop = chatWin.scrollHeight;
                 }
 
-                // Előzmények frissítése a memóriához
                 chatHistory.push({ role: "human", content: question });
                 chatHistory.push({ role: "assistant", content: fullAnswer });
-
             } catch (err) {
-                aiDiv.innerHTML = "❌ Hiba történt a válaszadás során.";
-                console.error(err);
+                aiDiv.innerHTML = "❌ Hiba történt.";
             }
         }
     </script>

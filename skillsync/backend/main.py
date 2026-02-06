@@ -78,6 +78,38 @@ async def chat_stream(query: ChatQuery):
             yield chunk
 
     return StreamingResponse(generate(), media_type="text/plain")
+
+@app.get("/files/{tenant_id}")
+async def list_files(tenant_id: str = "default"):
+    upload_dir = f"storage/{tenant_id}"
+    if not os.path.exists(upload_dir):
+        return []
+    
+    files = os.listdir(upload_dir)
+    # Csak a fájlneveket és méretüket adjuk vissza (példaként)
+    file_list = []
+    for f in files:
+        if f.endswith(".pdf"):
+            file_path = os.path.join(upload_dir, f)
+            file_list.append({
+                "name": f,
+                "size": os.path.getsize(file_path),
+                "path": file_path
+            })
+    return file_list
+
+@app.delete("/files/{tenant_id}/{filename}")
+async def delete_file(tenant_id: str, filename: str):
+    # 1. Törlés a fizikai tárolóból
+    file_path = f"storage/{tenant_id}/{filename}"
+    if os.path.exists(file_path):
+        os.remove(file_path)
+    else:
+        raise HTTPException(status_code=404, detail="A fájl nem található.")
+    from backend.database import rebuild_index_for_tenant
+    rebuild_index_for_tenant(tenant_id)
+
+    return {"message": f"{filename} sikeresen törölve és az index frissítve."}
     
 @app.get("/")
 async def read_index():
