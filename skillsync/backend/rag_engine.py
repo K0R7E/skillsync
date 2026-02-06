@@ -3,10 +3,12 @@ from langchain_ollama import ChatOllama # Ezt javítottuk!
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from backend.database import load_vectorstore
+from flashrank import Ranker, RerankRequest
 
 # 1. Alapmodell a válaszadáshoz és a kérdésbővítéshez
 # Llama 3.2 3B tökéletes erre a feladatra
 llm = ChatOllama(model="llama3.2:3b", temperature=0)
+ranker = Ranker(model_name="ms-marco-MiniLM-L-12-v2", cache_dir="opt/flashrank")
 
 # --- QUERY EXPANSION RÉSZ ---
 expansion_prompt = ChatPromptTemplate.from_template("""
@@ -36,18 +38,32 @@ def get_streaming_response(question, history, tenant_id="default"):
     # 3. Hybrid Retriever betöltése
     retriever = load_vectorstore(tenant_id)
     if not retriever:
-        yield "Sajnos még nincs feltöltött dokumentumod ehhez a fiókhoz."
+        yield "Még nincsenek dokumentumok."
         return
 
-    # 4. Keresés az összes generált kérdéssel
+    # 2. Dokumentumok begyűjtése (több kérdés alapján)
     all_docs = []
     for q in queries:
-        # Meghívjuk a hybrid retrieverünket (BM25 + FAISS)
         all_docs.extend(retriever.invoke(q))
     
-    # Duplikátumok kiszűrése (page_content alapján)
+    # Duplikátumok szűrése
     unique_docs = {doc.page_content: doc for doc in all_docs}.values()
-    context = "\n\n".join([doc.page_content for doc in unique_docs])
+    
+    # 3. RERANKING LÉPÉS
+    # Átalakítjuk a formátumot a FlashRank számára
+    ranker_input = [
+        {"id": i, "text": doc.page_content, "meta": doc.metadata} 
+        for i, doc in enumerate(unique_docs)
+    ]
+    
+    rerank_request = RerankRequest(query=question, passages=ranker_input)
+    results = ranker.rerank(rerank_request)
+    
+    # Csak a legjobb 3 találatot tartjuk meg
+    top_results = results[:3]
+    context = "\n\n".join([r['text'] for r in top_results])
+    
+    # print(f"DEBUG: Reranker utáni legjobb pontszám: {top_results[0]['score'] if top_results else 'N/A'}")
 
     # 5. Végső válasz generálása
     qa_prompt = ChatPromptTemplate.from_template("""
