@@ -1,7 +1,9 @@
 # backend/ingestion.py
 import os
+
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+
 
 def load_and_chunk_pdf(file_path):
     """PDF betöltése és darabolása metaadatokkal."""
@@ -24,9 +26,9 @@ def load_and_chunk_pdf(file_path):
     )
 
     chunks = text_splitter.split_documents(pages)
-    
+
     print(f"✅ Feldolgozva: {file_path}")
     print(f"📄 Oldalak száma: {len(pages)}")
     print(f"🧩 Chunkok száma: {len(chunks)}")
-    
+
     return chunks

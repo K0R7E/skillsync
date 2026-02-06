@@ -56,11 +56,14 @@
     </div>
 
     <script>
-        let chatHistory = [];
-        const tenant_id = "default"; // Később ez dinamikus lesz
+    // Session azonosító kezelése (böngésző bezárásig vagy törlésig megmarad)
+    let currentSessionId = localStorage.getItem('chat_session_id') || crypto.randomUUID();
+    localStorage.setItem('chat_session_id', currentSessionId);
 
-        // Oldal betöltésekor listázzuk a fájlokat
-        window.onload = refreshFileList;
+    let chatHistory = [];
+    const tenant_id = "default";
+
+    window.onload = refreshFileList;
 
         async function refreshFileList() {
             const listDiv = document.getElementById('file-list');
@@ -125,50 +128,51 @@
         }
 
         async function askChat() {
-            const input = document.getElementById('userInput');
-            const chatWin = document.getElementById('chat-window');
-            const question = input.value.trim();
-            if (!question) return;
+        const input = document.getElementById('userInput');
+        const chatWin = document.getElementById('chat-window');
+        const question = input.value.trim();
+        if (!question) return;
 
-            chatWin.innerHTML += `<div class="message user-msg">${question}</div>`;
-            input.value = "";
+        chatWin.innerHTML += `<div class="message user-msg">${question}</div>`;
+        input.value = "";
 
-            const aiDiv = document.createElement("div");
-            aiDiv.className = "message ai-msg";
-            aiDiv.innerHTML = "<em>...</em>";
-            chatWin.appendChild(aiDiv);
-            chatWin.scrollTop = chatWin.scrollHeight;
+        const aiDiv = document.createElement("div");
+        aiDiv.className = "message ai-msg";
+        aiDiv.innerHTML = "<em>...</em>";
+        chatWin.appendChild(aiDiv);
+        chatWin.scrollTop = chatWin.scrollHeight;
 
-            try {
-                const res = await fetch("/chat/stream", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        message: question,
-                        history: chatHistory,
-                        tenant_id: tenant_id
-                    })
-                });
+        try {
+            const res = await fetch("/chat/stream", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    message: question,
+                    history: chatHistory,
+                    tenant_id: tenant_id,
+                    session_id: currentSessionId // Beküldjük a session ID-t!
+                })
+            });
 
-                const reader = res.body.getReader();
-                const decoder = new TextDecoder();
-                let fullAnswer = "";
-                aiDiv.innerHTML = "";
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let fullAnswer = "";
+            aiDiv.innerHTML = "";
 
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    fullAnswer += decoder.decode(value);
-                    aiDiv.innerText = fullAnswer;
-                    chatWin.scrollTop = chatWin.scrollHeight;
-                }
-
-                chatHistory.push({ role: "human", content: question });
-                chatHistory.push({ role: "assistant", content: fullAnswer });
-            } catch (err) {
-                aiDiv.innerHTML = "❌ Hiba történt.";
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                fullAnswer += decoder.decode(value);
+                aiDiv.innerText = fullAnswer;
+                chatWin.scrollTop = chatWin.scrollHeight;
             }
+
+            chatHistory.push({ role: "human", content: question });
+            chatHistory.push({ role: "assistant", content: fullAnswer });
+        } catch (err) {
+            aiDiv.innerHTML = "❌ Hiba történt.";
         }
-    </script>
+    }
+</script>
 </body>
 </html>
