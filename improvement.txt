@@ -1,3 +1,78 @@
+⏳ Amik még hátravannak (Fejlesztésre vár)
+
+3. Szerepkör-alapú jogosultságkezelés (admin / szerkesztő / olvasó cégen belül)
+
+10. Tudáshiány-felderítés (gyakori kérdések dokumentáció nélkül)
+
+11. Lokális használati analitika (népszerű kérdések, kihasználatlan dokumentumok)
+
+12. Időzített újraindexelés (változáskor vagy ütemezve)
+
+13. Biztonságos frissítési mechanizmus (digitálisan aláírt frissítések, checksum)
+
+15. API-kapcsolatok belső eszközökhöz (Slack, Teams, intranet – opcionális)
+
+17. Eszközön belüli finomhangolás / adapterek (LoRA cégenként)
+
+18. Jogszabályi megfelelésre felkészítve (GDPR-szerű törlés, hozzáférési naplók)
+
+19. Katasztrófa-helyreállítás (titkosított mentések, visszaállítás)
+
+20. White-label lehetőség (céges arculat, név, hangnem)
+
+21. Skill-gráf (belső szakértelem automatikus feltérképezése)
+
+22. Human-in-the-loop javítások (felhasználói visszajelzés)
+
+24. Alacsony erőforrás-igényű mód (gyengébb gépeken is fut)
+
+30. Csevegési előzmények (Persistence - adatbázisba mentve)
+
+31. PDF vizualizáció
+
+33. Dockerizálás
+
+34. Logs & Audit (Naplózás adatvédelmi szabályokkal)
+
+✅ Amik már elkészültek (Működő funkciók)
+
+1. Több-bérlős (tenant) izoláció alapból (Működik: külön mappák és DB-k)
+
+2. Offline-first működés (Működik: Ollama + helyi FAISS)
+
+4. Dokumentum életciklus-kezelés (Törlés és újraindexelés kész!)
+
+5. Intelligens PDF feldolgozás (Működik: LangChain loader + chunking)
+
+6. Cserélhető vektoradatbázisok (Strukturálisan kész a FAISS-al)
+
+7. Rugalmas modellkezelés Ollamával (Implementálva)
+
+8. Prompt-irányítás (Beégetve a kódban, finomításra vár)
+
+9. Magyarázható válaszok (Működik: Forrásmegjelölés és oldalszám)
+
+14. CLI + könnyű webes UI (Működik: FastAPI + index.html)
+
+16. Többnyelvű támogatás (A modellek és a Hybrid search kezelik)
+
+23. Hibrid keresés + chat mód (Implementálva)
+
+25. Egyértelmű bizalmi határok (Lokális futtatás garantálja)
+
+26. Hybrid Search (BM25) (Működik)
+
+27. Reranking (Működik: FlashRank)
+
+28. Ollama optimalizálás (Llama 3.2 3B használatával kész)
+
+29. Streaming válaszok (Működik)
+
+32. Dokumentum menedzsment (Működik: lista + törlés funkció)
+
+
+
+
 1. Több-bérlős (tenant) izoláció alapból (cégenként külön lokális vektoradatbázis, workspace-enként, titkosítva)
 2. Offline-first működés, internet csak modell- és szoftverfrissítésekhez (dokumentumok soha nem mennek ki)
 3. Szerepkör-alapú jogosultságkezelés (admin / szerkesztő / olvasó cégen belül)
