@@ -1,50 +1,42 @@
-⏳ Amik még hátravannak (Fejlesztésre vár)
+Hátralévő fejlesztések (Prioritási sorrendben)
 
-3. Szerepkör-alapú jogosultságkezelés (admin / szerkesztő / olvasó cégen belül)
+🛡️ Biztonság és Megfelelőség (Compliance)
 
-10. Tudáshiány-felderítés (gyakori kérdések dokumentáció nélkül)
+3. Szerepkör-alapú jogosultság (RBAC): Kritikus! Mindenki látja az adatbázist, de csak az "Admin" tölthet fel/törölhet, a "Jogász" kérdezhet, az "Asszisztens" csak olvashat.
 
-11. Lokális használati analitika (népszerű kérdések, kihasználatlan dokumentumok)
+34. Logs & Audit (Naplózás): Jogi környezetben kötelező. Ki, mikor, melyik jogszabályra kérdezett rá?
 
-12. Időzített újraindexelés (változáskor vagy ütemezve)
+18. GDPR-megfelelőség: Adatvédelmi tisztítás, hozzáférési naplók és "elfelejtéshez való jog" implementálása.
 
-13. Biztonságos frissítési mechanizmus (digitálisan aláírt frissítések, checksum)
+37. Intranet-only mód: Szoftveres tűzfal a külső kommunikáció teljes tiltására.
 
-15. API-kapcsolatok belső eszközökhöz (Slack, Teams, intranet – opcionális)
+🧠 Intelligencia és Pontosság
 
-17. Eszközön belüli finomhangolás / adapterek (LoRA cégenként)
+10. Tudáshiány-felderítés: Ha a jogászok olyan kérdést tesznek fel, amire nincs válasz a feltöltött PDF-ekben, a rendszer jelezze: "Hiányzó jogszabály: [Téma]".
 
-18. Jogszabályi megfelelésre felkészítve (GDPR-szerű törlés, hozzáférési naplók)
+22. Human-in-the-loop: A jogászok "lájkolhatják" vagy javíthatják az AI válaszát, ezzel finomítva a későbbi találatokat.
 
-19. Katasztrófa-helyreállítás (titkosított mentések, visszaállítás)
+17. Legal LoRA: A modell finomhangolása kifejezetten a magyar jogi nyelvezetre és szakzsargonra.
 
-20. White-label lehetőség (céges arculat, név, hangnem)
+21. Skill-gráf: A kérdések alapján látható, melyik kolléga melyik jogterületen (pl. munkajog, cégjog) a legaktívabb.
 
-21. Skill-gráf (belső szakértelem automatikus feltérképezése)
+🖥️ Felhasználói élmény és Telepítés
 
-22. Human-in-the-loop javítások (felhasználói visszajelzés)
+31. PDF vizualizáció: A chat mellett jelenjen meg a PDF adott oldala, kiemelve a releváns bekezdést.
 
-24. Alacsony erőforrás-igényű mód (gyengébb gépeken is fut)
+35. Cross-platform Installer: Egy kattintással telepíthető "Lexium.exe" az ügyvédi iroda gépeire.
 
-30. Csevegési előzmények (Persistence - adatbázisba mentve)
+30. Csevegési előzmények: Perzisztens tárolás SQL-ben, hogy a korábbi ügyek kutatásai ne vesszenek el.
 
-31. PDF vizualizáció
+39. Offline Modell-csomagolás: A telepítő tartalmazza a Llama 3.2-t és az Embedding modellt, így internet nélküli irodákban is azonnal fut.
 
-33. Dockerizálás
+⚙️ Üzemeltetés
 
-34. Logs & Audit (Naplózás adatvédelmi szabályokkal)
+12. Időzített újraindexelés: Automatikus frissítés, ha új jogszabály-közlöny kerül a mappába.
 
-35. Cross-platform Installer (Önállóan futtatható telepítőfájl: .exe Windowsra, .sh Linuxra)
+33. Dockerizálás: A teljes Lexium stack (Ollama, API, UI) konténerbe zárása.
 
-36. Automatikus hardver-detektálás (GPU/CPU felismerés a telepítéskor az Ollama optimalizáláshoz)
-
-37. Intranet-only mód (Minden külső hálózati kérés letiltása szoftveres szinten)
-
-38. Egységesített SQL séma-kezelés (Automatikus adatbázis-migráció a frissítésekhez)
-
-39. Offline Modell-csomagolás (Az LLM súlyok előzetes letöltése a telepítőbe)
-
-40. Biztonsági mentés export/import (Tenant-szintű titkosított mentés készítése)
+40. Titkosított mentés: A közös tudásbázis és az audit logok napi szintű exportálása.
 
 ✅ Amik már elkészültek (Működő funkciók)
 
@@ -79,5 +71,7 @@
 28. Ollama optimalizálás (Llama 3.2 3B használatával kész)
 
 29. Streaming válaszok (Működik)
+
+32. Dokumentum menedzsment (Működik: lista + törlés funkció)
 
 32. Dokumentum menedzsment (Működik: lista + törlés funkció)
