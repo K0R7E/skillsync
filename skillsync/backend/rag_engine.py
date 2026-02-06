@@ -1,53 +1,54 @@
-# backend/rag_engine.py
 import os
 from langchain_ollama import OllamaLLM
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
 from backend.database import load_vectorstore
 
-# LLM konfiguráció
+# LLM beállítása
 llm = OllamaLLM(model="llama3")
 
-# Prompt Template - Szigorú utasítás az AI-nak
-RAG_PROMPT_TEMPLATE = """
-Te a SkillSync AI asszisztense vagy. Az alábbi kontextus alapján válaszolj a kérdésre.
-Ha nem találod a választ a kontextusban, mondd azt, hogy nem tudod, ne találj ki semmit!
+def format_docs(docs):
+    """Dokumentumok összefűzése kontextussá."""
+    return "\n\n".join(doc.page_content for doc in docs)
 
-KONTEXTUS:
-{context}
+def get_streaming_response(query, history, tenant_id="default"):
+    # 1. Betöltjük a kész keresőt (ami már Hybrid: FAISS + BM25)
+    retriever = load_vectorstore(tenant_id)
 
-KÉRDÉS:
-{question}
+    if not retriever:
+        yield "Hiba: Nincs elérhető tudásbázis. Tölts fel egy PDF-et!"
+        return
 
-VÁLASZ (magyarul, lényegretörően):
-"""
+    # 2. RAG Prompt összeállítása
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "Te a SkillSync biztonságos AI asszisztense vagy. Az alábbi kontextus alapján válaszolj:\n\n{context}"),
+        MessagesPlaceholder(variable_name="chat_history"),
+        ("human", "{input}"),
+    ])
 
-def get_response(query):
-    # 1. Vektoradatbázis betöltése
-    vector_db = load_vectorstore()
-    if not vector_db:
-        return "Hiba: Az adatbázis üres. Tölts fel egy PDF-et előbb!", []
+    # 3. A Lánc (Chain) összeállítása LCEL-lel
+    chain = (
+        {
+            "context": (lambda x: x["input"]) | retriever | format_docs, 
+            "input": lambda x: x["input"],
+            "chat_history": lambda x: x["chat_history"]
+        }
+        | prompt
+        | llm
+        | StrOutputParser()
+    )
 
-    # 2. Keresés (Hasonlóság alapján a top 3 legrelevánsabb részt kérjük le)
-    docs = vector_db.similarity_search(query, k=3)
+    # 4. Streaming futtatás
+    for chunk in chain.stream({"input": query, "chat_history": history}):
+        yield chunk
+
+def get_response(query, history=None, tenant_id="default"):
+    """Nem streaming változat a kompatibilitás kedvéért."""
+    if history is None: history = []
+    full_response = ""
+    for chunk in get_streaming_response(query, history, tenant_id):
+        full_response += chunk
     
-    # 3. Kontextus összefűzése
-    context_text = "\n\n---\n\n".join([doc.page_content for doc in docs])
-    
-    # 4. Prompt összeállítása
-    prompt = ChatPromptTemplate.from_template(RAG_PROMPT_TEMPLATE)
-    formatted_prompt = prompt.format(context=context_text, question=query)
-    
-    # 5. LLM hívás
-    response_text = llm.invoke(formatted_prompt)
-    
-    # 6. Források kinyerése metaadatokból
-    sources = []
-    for doc in docs:
-        source_name = os.path.basename(doc.metadata.get('source', 'Ismeretlen'))
-        page_num = doc.metadata.get('page', '?') + 1 # 0-ról indul az indexelés
-        sources.append(f"{source_name} ({page_num}. oldal)")
-    
-    # Duplikált források szűrése
-    unique_sources = list(set(sources))
-    
-    return response_text, unique_sources
+    # Itt most egyszerűsítve adjuk vissza a forrásokat (MVP szint)
+    return full_response, ["Helyi PDF dokumentum"]
