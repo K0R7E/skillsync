@@ -57,3 +57,8 @@ PR-ek és ötletek welcome 🙌
 ## 📜 Licenc
 
 MIT
+
+## Activate venv env
+
+.venv/bin/activate
+deactivate
