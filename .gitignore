@@ -1,8 +1,5 @@
 # .gitignore
-venv/
-__pycache__/
-*.pyc
-.DS_Store
+
 
 # Adatok és Vektorok (Szigorúan lokális!)
 data/*
@@ -13,3 +10,19 @@ vectorstore/*
 # IDE beállítások
 .vscode/
 .idea/
+
+# SkillSync Adatbázisok és tárolók
+db/
+storage/
+vectorstore/
+
+# Python virtuális környezet (ha még nem lenne benne)
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+*.pyc
+.DS_Store
+
+# Környezeti változók (API kulcsok stb.)
+.env
