@@ -34,6 +34,18 @@
 
 34. Logs & Audit (Naplózás adatvédelmi szabályokkal)
 
+35. Cross-platform Installer (Önállóan futtatható telepítőfájl: .exe Windowsra, .sh Linuxra)
+
+36. Automatikus hardver-detektálás (GPU/CPU felismerés a telepítéskor az Ollama optimalizáláshoz)
+
+37. Intranet-only mód (Minden külső hálózati kérés letiltása szoftveres szinten)
+
+38. Egységesített SQL séma-kezelés (Automatikus adatbázis-migráció a frissítésekhez)
+
+39. Offline Modell-csomagolás (Az LLM súlyok előzetes letöltése a telepítőbe)
+
+40. Biztonsági mentés export/import (Tenant-szintű titkosított mentés készítése)
+
 ✅ Amik már elkészültek (Működő funkciók)
 
 1. Több-bérlős (tenant) izoláció alapból (Működik: külön mappák és DB-k)
